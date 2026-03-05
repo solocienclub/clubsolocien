@@ -89,12 +89,12 @@ name: name
 external_reference: transactionId.toString(),
 
 notification_url:
-"https://unhoodwinked-mimetic-hilma.ngrok-free.dev/payments/webhook",
+"https://clubsolocien.com/payments/webhook",
 
 back_urls:{
-success:"https://unhoodwinked-mimetic-hilma.ngrok-free.dev/pago-exitoso.html",
-failure:"https://unhoodwinked-mimetic-hilma.ngrok-free.dev/pago-fallido.html",
-pending:"https://unhoodwinked-mimetic-hilma.ngrok-free.dev/pago-pendiente.html"
+success:"https://clubsolocien.com/pago-exitoso.html",
+failure:"https://clubsolocien.com/pago-fallido.html",
+pending:"https://clubsolocien.com/pago-pendiente.html"
 },
 
 auto_return:"approved"
