@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Editar perfil</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f5f5;
+margin:0;
+}
+
+.container{
+
+max-width:500px;
+margin:auto;
+margin-top:50px;
+
+background:white;
+
+padding:30px;
+
+border-radius:10px;
+
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
+
+}
+
+h2{
+margin-top:0;
+}
+
+input{
+
+width:100%;
+padding:12px;
+
+margin-top:10px;
+
+border-radius:5px;
+
+border:1px solid #ccc;
+
+}
+
+button{
+
+width:100%;
+
+margin-top:15px;
+
+padding:12px;
+
+border:none;
+
+border-radius:5px;
+
+background:#1976d2;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+.photo{
+
+display:flex;
+justify-content:center;
+margin-bottom:15px;
+
+}
+
+.photo img{
+
+width:100px;
+height:100px;
+border-radius:50%;
+object-fit:cover;
+
+}
+
+.back{
+background:#444;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Editar perfil</h2>
+
+<div class="photo">
+
+<img id="profilePhoto" src="/uploads/predeterminada.png">
+
+</div>
+
+<input type="file" id="photoInput">
+
+<input id="name" placeholder="Nombre">
+
+<input id="lastname" placeholder="Apellido">
+
+<input id="email" placeholder="Correo">
+
+<input id="phone" placeholder="Teléfono">
+
+<input id="password" placeholder="Nueva contraseña">
+
+<button onclick="saveProfile()">
+Guardar cambios
+</button>
+
+<button class="back" onclick="goBack()">
+Volver al dashboard
+</button>
+
+</div>
+
+<script>
+
+/* ========================
+TOKEN
+======================== */
+
+function parseJwt(token){
+return JSON.parse(atob(token.split('.')[1]))
+}
+
+const token = localStorage.getItem("token")
+
+if(!token){
+window.location="/login.html"
+}
+
+/* ========================
+CARGAR PERFIL
+======================== */
+
+async function loadProfile(){
+
+try{
+
+const res = await fetch("/users/me",{
+headers:{ Authorization: token }
+})
+
+const data = await res.json()
+
+document.getElementById("name").value = data.name || ""
+document.getElementById("lastname").value = data.lastname || ""
+document.getElementById("email").value = data.email || ""
+document.getElementById("phone").value = data.phone || ""
+
+/* FOTO */
+
+if(data.photo){
+
+document.getElementById("profilePhoto").src =
+"/uploads/" + data.photo
+
+}else{
+
+document.getElementById("profilePhoto").src =
+"/uploads/predeterminada.png"
+
+}
+
+}catch(error){
+
+console.log(error)
+
+}
+
+}
+
+/* ========================
+PREVIEW FOTO
+======================== */
+
+document.getElementById("photoInput").addEventListener("change",function(){
+
+const file = this.files[0]
+
+if(file){
+
+const reader = new FileReader()
+
+reader.onload = function(e){
+
+document.getElementById("profilePhoto").src = e.target.result
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+})
+
+/* ========================
+GUARDAR PERFIL
+======================== */
+
+async function saveProfile(){
+
+const name = document.getElementById("name").value
+const lastname = document.getElementById("lastname").value
+const email = document.getElementById("email").value
+const phone = document.getElementById("phone").value
+const password = document.getElementById("password").value
+
+try{
+
+/* actualizar datos */
+
+await fetch("/users/update",{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:token
+},
+
+body:JSON.stringify({
+name,
+lastname,
+email,
+phone
+})
+
+})
+
+/* cambiar password */
+
+if(password){
+
+await fetch("/users/password",{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:token
+},
+
+body:JSON.stringify({password})
+
+})
+
+}
+
+/* subir foto */
+
+const file = document.getElementById("photoInput").files[0]
+
+if(file){
+
+const formData = new FormData()
+
+formData.append("photo",file)
+
+await fetch("/users/photo",{
+
+method:"POST",
+
+headers:{ Authorization: token },
+
+body:formData
+
+})
+
+}
+
+alert("Perfil actualizado")
+
+window.location="/dashboard.html"
+
+}catch(error){
+
+console.log(error)
+
+alert("Error actualizando perfil")
+
+}
+
+}
+
+/* ========================
+VOLVER
+======================== */
+
+function goBack(){
+window.location="/dashboard.html"
+}
+
+loadProfile()
+
+</script>
+
+</body>
+
+</html>

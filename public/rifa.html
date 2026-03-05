@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Rifa</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#111;
+color:white;
+margin:0;
+}
+
+/* LAYOUT */
+
+.container{
+display:flex;
+gap:40px;
+max-width:1200px;
+margin:auto;
+padding:30px;
+}
+
+/* CARTON */
+
+.left{
+flex:3;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(10,1fr);
+gap:10px;
+}
+
+/* CARRITO */
+
+.right{
+flex:1;
+background:#1e1e1e;
+padding:20px;
+border-radius:10px;
+position:sticky;
+top:20px;
+height:fit-content;
+}
+
+/* NUMEROS */
+
+.number{
+padding:20px;
+border-radius:6px;
+cursor:pointer;
+text-align:center;
+font-weight:bold;
+position:relative;
+}
+
+.available{
+background:#2ecc71;
+}
+
+.selected{
+background:#3498db;
+}
+
+.reserved{
+background:#f1c40f;
+cursor:not-allowed;
+}
+
+.sold{
+background:#e74c3c;
+cursor:not-allowed;
+}
+
+/* LISTA NUMEROS */
+
+.selectedNumbers{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+margin-top:10px;
+}
+
+.selectedItem{
+background:#3498db;
+padding:5px 8px;
+border-radius:4px;
+}
+
+/* BOTON */
+
+button{
+margin-top:20px;
+padding:12px;
+width:100%;
+border:none;
+border-radius:6px;
+background:#2ecc71;
+font-size:16px;
+cursor:pointer;
+}
+
+/* TOOLTIP */
+
+.tooltip{
+
+position:fixed;
+background:#000;
+color:white;
+
+padding:10px;
+border-radius:8px;
+
+display:none;
+flex-direction:column;
+align-items:center;
+
+z-index:9999;
+
+box-shadow:0 0 10px rgba(0,0,0,0.5);
+
+font-size:14px;
+
+pointer-events:none;
+
+}
+
+.tooltip img{
+
+width:45px;
+height:45px;
+border-radius:50%;
+margin-bottom:5px;
+object-fit:cover;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- CARTON -->
+
+<div class="left">
+
+<h1>Selecciona tus números</h1>
+
+<div id="numbersGrid" class="grid"></div>
+
+</div>
+
+<!-- CARRITO -->
+
+<div class="right">
+
+<h2>Tu carrito</h2>
+
+<p id="selectedCount">0 números seleccionados</p>
+
+<div id="selectedNumbers" class="selectedNumbers"></div>
+
+<h3 id="totalPrice">$0</h3>
+
+<button onclick="pagar()">
+Pagar
+</button>
+
+</div>
+
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+
+/* ======================
+TOKEN
+====================== */
+
+const token = localStorage.getItem("token")
+
+if(!token){
+
+alert("Debes iniciar sesión")
+window.location="/login.html"
+
+}
+
+/* ======================
+PARAMETROS
+====================== */
+
+const params = new URLSearchParams(window.location.search)
+
+const raffleId = params.get("id")
+
+let pricePerNumber = 0
+
+let cart = []
+
+/* ======================
+CARGAR NUMEROS
+====================== */
+
+async function loadNumbers(){
+
+try{
+
+const res = await fetch(`/numbers/${raffleId}`)
+
+const numbers = await res.json()
+
+const grid = document.getElementById("numbersGrid")
+
+grid.innerHTML=""
+
+const map = {}
+
+numbers.forEach(n=>{
+map[n.number]=n
+})
+
+for(let i=0;i<100;i++){
+
+let num = i.toString().padStart(2,"0")
+
+let data = map[num]
+
+let div = document.createElement("div")
+
+div.classList.add("number")
+
+div.innerText=num
+
+if(data){
+
+/* disponible */
+
+if(data.status==="available"){
+
+div.classList.add("available")
+
+div.onclick=()=>toggleNumber(num)
+
+}
+
+/* reservado */
+
+if(data.status==="reserved"){
+
+div.classList.add("reserved")
+
+div.innerHTML=`${num}<br>⏳`
+
+}
+
+/* vendido */
+
+if(data.status==="sold"){
+
+div.classList.add("sold")
+
+div.innerHTML=`${num}<br>✔`
+
+div.onmouseenter=(e)=>showTooltip(e,data)
+div.onmouseleave=hideTooltip
+
+}
+
+}
+
+/* seleccionado */
+
+if(cart.includes(num)){
+
+div.classList.remove("available")
+div.classList.add("selected")
+
+}
+
+grid.appendChild(div)
+
+}
+
+}catch(error){
+
+console.log(error)
+
+}
+
+}
+
+/* ======================
+SELECCIONAR NUMERO
+====================== */
+
+function toggleNumber(num){
+
+if(cart.includes(num)){
+
+cart = cart.filter(n=>n!==num)
+
+}else{
+
+cart.push(num)
+
+}
+
+updateCart()
+loadNumbers()
+
+}
+
+/* ======================
+ACTUALIZAR CARRITO
+====================== */
+
+function updateCart(){
+
+document.getElementById("selectedCount").innerText =
+cart.length+" números seleccionados"
+
+const container =
+document.getElementById("selectedNumbers")
+
+container.innerHTML=""
+
+cart.forEach(n=>{
+
+const div=document.createElement("div")
+
+div.className="selectedItem"
+
+div.innerText=n
+
+container.appendChild(div)
+
+})
+
+const total = cart.length * pricePerNumber
+
+document.getElementById("totalPrice").innerText =
+"$"+total
+
+}
+
+/* ======================
+TOOLTIP
+====================== */
+
+function showTooltip(e,data){
+
+const tooltip = document.getElementById("tooltip")
+
+const name = data.name || "Usuario"
+const photo = data.photo || "predeterminada.png"
+
+tooltip.innerHTML = `
+<img src="/uploads/${photo}">
+<span>${name}</span>
+`
+
+tooltip.style.display="flex"
+
+tooltip.style.left = (e.clientX + 10) + "px"
+tooltip.style.top = (e.clientY + 10) + "px"
+
+}
+
+function hideTooltip(){
+
+const tooltip = document.getElementById("tooltip")
+
+tooltip.style.display="none"
+
+}
+
+/* tooltip sigue el mouse */
+
+document.addEventListener("mousemove",(e)=>{
+
+const tooltip = document.getElementById("tooltip")
+
+if(tooltip.style.display==="flex"){
+
+tooltip.style.left = (e.clientX + 15) + "px"
+tooltip.style.top = (e.clientY + 15) + "px"
+
+}
+
+})
+
+/* ======================
+PAGAR
+====================== */
+
+async function pagar(){
+
+if(cart.length===0){
+alert("Selecciona al menos un número")
+return
+}
+
+const btn = document.querySelector("button")
+
+btn.disabled = true
+btn.innerText = "Procesando..."
+
+try{
+
+const total = cart.length * pricePerNumber
+
+/* guardar carrito */
+
+localStorage.setItem("cart_numbers",JSON.stringify(cart))
+localStorage.setItem("cart_raffle",raffleId)
+
+/* =======================
+RESERVAR NUMEROS
+======================= */
+
+const reserve = await fetch("/numbers/reserve-multiple",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:token
+},
+
+body:JSON.stringify({
+
+numbers:cart,
+raffle_id:raffleId
+
+})
+
+})
+
+const reserveData = await reserve.json()
+
+if(!reserve.ok){
+
+alert(reserveData.message)
+
+btn.disabled=false
+btn.innerText="Pagar"
+
+return
+
+}
+
+/* =======================
+CREAR PAGO
+======================= */
+
+const payment = await fetch("/payments/create",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:token
+},
+
+body:JSON.stringify({
+
+numbers:cart,
+raffle_id:raffleId,
+amount:total
+
+})
+
+})
+
+const paymentData = await payment.json()
+
+/* =======================
+IR A MERCADOPAGO
+======================= */
+
+window.location = paymentData.checkout_url
+
+}catch(error){
+
+console.log(error)
+
+alert("Error iniciando pago")
+
+btn.disabled=false
+btn.innerText="Pagar"
+
+}
+
+}
+
+/* ======================
+CARGAR RIFA
+====================== */
+
+async function loadRaffle(){
+
+try{
+
+const res = await fetch(`/raffles/${raffleId}`)
+
+const raffle = await res.json()
+
+pricePerNumber = raffle.ticket_price
+
+}catch(error){
+
+console.log("Error cargando rifa",error)
+
+}
+
+}
+
+/* ======================
+AUTO ACTUALIZAR CARTON
+====================== */
+
+setInterval(loadNumbers,2000)
+
+/* ======================
+INICIAR
+====================== */
+
+async function init(){
+
+await loadRaffle()
+
+loadNumbers()
+
+}
+
+init()
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

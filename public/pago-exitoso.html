@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Pago exitoso</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+margin:0;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.card{
+
+background:#1e293b;
+padding:40px;
+border-radius:15px;
+text-align:center;
+width:420px;
+box-shadow:0 10px 40px rgba(0,0,0,0.4);
+
+}
+
+.icon{
+font-size:60px;
+color:#22c55e;
+margin-bottom:15px;
+}
+
+h1{
+margin:10px 0;
+}
+
+.info{
+margin-top:20px;
+background:#0f172a;
+padding:15px;
+border-radius:10px;
+}
+
+button{
+
+margin-top:25px;
+padding:12px 25px;
+border:none;
+border-radius:8px;
+background:#22c55e;
+color:white;
+font-size:16px;
+cursor:pointer;
+
+}
+
+button:hover{
+background:#16a34a;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="icon">✔</div>
+
+<h1>Pago exitoso</h1>
+
+<p>Tu compra fue procesada correctamente</p>
+
+<div class="info">
+
+<p><b>ID de pago:</b> <span id="paymentId"></span></p>
+
+</div>
+
+<button onclick="volver()">Volver al panel</button>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search)
+
+const paymentId = params.get("payment_id")
+
+document.getElementById("paymentId").innerText =
+paymentId || "No disponible"
+
+function volver(){
+
+window.location="/dashboard.html"
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Pago fallido</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+margin:0;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.card{
+
+background:#1e293b;
+padding:40px;
+border-radius:15px;
+text-align:center;
+width:420px;
+box-shadow:0 10px 40px rgba(0,0,0,0.4);
+
+}
+
+.icon{
+font-size:60px;
+color:#ef4444;
+margin-bottom:15px;
+}
+
+button{
+
+margin-top:25px;
+padding:12px 25px;
+border:none;
+border-radius:8px;
+background:#ef4444;
+color:white;
+font-size:16px;
+cursor:pointer;
+
+}
+
+button:hover{
+background:#dc2626;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="icon">✖</div>
+
+<h1>Pago fallido</h1>
+
+<p>No se pudo procesar el pago.</p>
+
+<p>Los números reservados fueron liberados.</p>
+
+<button onclick="volver()">Intentar nuevamente</button>
+
+</div>
+
+<script>
+
+function volver(){
+
+window.location="/dashboard.html"
+
+}
+
+</script>
+
+<script>
+
+async function liberarReserva(){
+
+try{
+
+const numbers = JSON.parse(localStorage.getItem("cart_numbers"))
+const raffle = localStorage.getItem("cart_raffle")
+
+if(!numbers || !raffle){
+return
+}
+
+await fetch("/numbers/cancel-reservation",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+numbers:numbers,
+raffle_id:raffle
+
+})
+
+})
+
+/* limpiar carrito */
+
+localStorage.removeItem("cart_numbers")
+localStorage.removeItem("cart_raffle")
+localStorage.removeItem("cart_total")
+
+}catch(error){
+
+console.log("Error liberando reserva",error)
+
+}
+
+}
+
+liberarReserva()
+
+</script>
+
+</body>
+</html>

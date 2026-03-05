@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Panel Administrador</title>
+
+<link rel="stylesheet" href="admin.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+
+<h2>ADMIN</h2>
+
+<ul>
+
+<li onclick="loadDashboard()">Dashboard</li>
+<li onclick="loadUsers()">Usuarios</li>
+<li onclick="loadRaffles()">Rifas</li>
+<li onclick="loadNumbers()">Números</li>
+<li onclick="loadSales()">Ventas</li>
+
+</ul>
+
+<button onclick="goDashboard()">Volver</button>
+
+</div>
+
+<div class="content">
+
+<h1>Panel administrador</h1>
+
+<div id="panelContent"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const token = localStorage.getItem("token")
+
+function parseJwt(token){
+return JSON.parse(atob(token.split('.')[1]))
+}
+
+
+if(!token){
+window.location="/login.html"
+}
+
+const user = parseJwt(token)
+
+if(user.role !== "admin"){
+alert("Acceso restringido")
+window.location="/dashboard.html"
+}
+
+function goDashboard(){
+window.location="/dashboard.html"
+}
+
+</script>
+
+<script src="admin.js"></script>
+
+</body>
+</html>

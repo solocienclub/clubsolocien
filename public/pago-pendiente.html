@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Pago pendiente</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+margin:0;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.card{
+
+background:#1e293b;
+padding:40px;
+border-radius:15px;
+text-align:center;
+width:420px;
+box-shadow:0 10px 40px rgba(0,0,0,0.4);
+
+}
+
+.icon{
+font-size:60px;
+color:#facc15;
+margin-bottom:15px;
+}
+
+button{
+
+margin-top:25px;
+padding:12px 25px;
+border:none;
+border-radius:8px;
+background:#facc15;
+color:black;
+font-size:16px;
+cursor:pointer;
+
+}
+
+button:hover{
+background:#eab308;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="icon">⏳</div>
+
+<h1>Pago pendiente</h1>
+
+<p>Tu pago está siendo procesado.</p>
+
+<p>Cuando sea aprobado los números quedarán registrados automáticamente.</p>
+
+<button onclick="volver()">Volver al panel</button>
+
+</div>
+
+<script>
+
+function volver(){
+
+window.location="/dashboard.html"
+
+}
+
+</script>
+
+<script>
+
+setTimeout(()=>{
+
+liberarReserva()
+
+},300000)
+
+</script>
+
+</body>
+</html>
