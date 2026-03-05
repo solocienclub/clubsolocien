@@ -194,7 +194,7 @@ return JSON.parse(atob(token.split('.')[1]))
 const token = localStorage.getItem("token")
 
 if(!token){
-window.location="/login.html"
+window.location="/index.html"
 }
 
 const user = parseJwt(token)
@@ -213,7 +213,7 @@ window.location="/admin/admin.html"
 
 function logout(){
 localStorage.removeItem("token")
-window.location="/login.html"
+window.location="/index.html"
 }
 
 function editProfile(){
